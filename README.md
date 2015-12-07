@@ -1,2 +1,2 @@
 # orbit
-Ruby web framework focusing on decoupling.
+Ruby web framework focused on decoupling.
