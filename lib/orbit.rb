@@ -34,6 +34,12 @@ module Orbit
         files = files_with_exception
         retries += 1
       end
+
+      if files.any?
+        puts "[Warning] some files could not be loaded:"
+        files_with_exception.each { |file| puts " - #{file}" }
+      end
+      puts ""
     end
 
     def self.config

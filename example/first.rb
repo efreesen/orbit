@@ -1,4 +1,4 @@
-class First < Orbit::Controller
+class Firsta < Orbit::Controller
   path '/first'
 
   get :one do
