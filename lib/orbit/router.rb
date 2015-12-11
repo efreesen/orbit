@@ -29,8 +29,11 @@ module Orbit
       route = routes_for_verb.fetch(path, nil)
 
       unless route
-        keys = routes_for_verb.find{ |pattern, options| m = options[:route].path.regex.match(path); !!m }
-        route = routes_for_verb.fetch(keys.first, nil) if keys
+        route = routes_for_verb.find do |pattern, options|
+          options[:route].path.regex.match(path)
+        end
+
+        route = route.last
       end
 
       route
