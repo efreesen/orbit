@@ -1,4 +1,5 @@
 require './lib/orbit'
-require './example/root'
-require './example/specific'
-require './example/specificest'
+
+Orbit::Application.configure do |config|
+  config.app_path = 'example'
+end
