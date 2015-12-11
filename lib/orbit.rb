@@ -6,14 +6,34 @@ require "./lib/orbit/routing/path"
 require "./lib/orbit/router"
 require "./lib/orbit/config"
 require "./lib/orbit/router"
-require "./lib/orbit/base"
+require "./lib/orbit/controller"
 
 module Orbit
   class Application < Singleton
     def initialize
       instantiate
 
-      Dir["#{Dir.pwd}/#{config.app_path}/**/*.rb"].each {|file| require file }
+      load_files
+    end
+
+    def load_files
+      retries = 0
+      files = Dir["#{Dir.pwd}/#{config.app_path}/**/*.rb"]
+
+      while retries < 3 && files.any?
+        files_with_exception = []
+        
+        files.each do |file|
+          begin
+            require file
+          rescue NameError
+            files_with_exception.push(file)
+          end
+        end
+
+        files = files_with_exception
+        retries += 1
+      end
     end
 
     def self.config
