@@ -1,13 +1,17 @@
-module Orbit
-  module Controller
-    class Root < Base
-      get '/' do
-        'Get Root'
-      end
+class Root < Orbit::Controller
+  get '/' do
+    'Get Root'
+  end
 
-      post '/' do
-        'Post Root'
-      end
-    end
+  get '/*' do
+    'All'
+  end
+
+  get '/root/*' do
+    'Root All'
+  end
+
+  post '/' do
+    'Post Root'
   end
 end

@@ -2,4 +2,4 @@
 
 require './example/application'
 
-run Orbit::Base.new
+run Orbit::Application.new

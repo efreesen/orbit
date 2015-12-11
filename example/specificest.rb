@@ -1,11 +1,7 @@
-module Orbit
-  module Controller
-    class Specificest < Specific
-      path '/specificest'
+class Specificest < Specific
+  path '/specificest'
 
-      get :oh_my do
-        'oh my!!!'
-      end
-    end
+  get :oh_my do
+    'oh my!!!'
   end
 end
