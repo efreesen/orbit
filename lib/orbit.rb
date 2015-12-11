@@ -1,18 +1,46 @@
 require "rack"
-require './lib/orbit/router'
-require './lib/orbit/base'
+
+require "./lib/orbit/singleton"
+require "./lib/orbit/routing/route"
+require "./lib/orbit/routing/path"
+require "./lib/orbit/router"
+require "./lib/orbit/config"
+require "./lib/orbit/router"
+require "./lib/orbit/base"
 
 module Orbit
-  class Base
+  class Application < Singleton
+    def initialize
+      instantiate
+
+      Dir["#{Dir.pwd}/#{config.app_path}/**/*.rb"].each {|file| require file }
+    end
+
+    def self.config
+      @config ||= Orbit::Config.instance
+    end
+
+    def config
+      self.class.config
+    end
+
+    def self.configure
+      yield config
+    end
+
     def call(env)
       @request = Rack::Request.new(env)
       verb = @request.request_method
       requested_path = @request.path_info
 
-      handler = Router.routes.fetch(verb, {}).fetch(requested_path, nil)
+      route = Config.router_class.match(verb, requested_path)
 
-      if handler
-        result = handler[:class].new(@request).send(handler[:action])
+      if route
+        route_params = route[:route].path.get_params(requested_path) || {}
+
+        @request.params.merge!(route_params)
+
+        result = route[:class].new(@request).send(route[:action])
         if result.class == String
           [200, {}, [result]]
         else
