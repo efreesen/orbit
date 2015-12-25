@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
-gem 'orbit-rb', path: '../'
+gem 'orbit-rb'
 
