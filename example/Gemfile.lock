@@ -1,0 +1,22 @@
+PATH
+  remote: ../
+  specs:
+    orbit-rb (0.1.0)
+      rack (~> 1.5)
+      rack-protection (~> 1.4)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rack (1.6.4)
+    rack-protection (1.5.3)
+      rack
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  orbit-rb!
+
+BUNDLED WITH
+   1.10.6
