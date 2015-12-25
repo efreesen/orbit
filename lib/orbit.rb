@@ -1,45 +1,50 @@
 require "rack"
 
-require "./lib/orbit/singleton"
-require "./lib/orbit/routing/route"
-require "./lib/orbit/routing/path"
-require "./lib/orbit/router"
-require "./lib/orbit/config"
-require "./lib/orbit/router"
-require "./lib/orbit/controller"
+require "orbit/version"
+require "orbit/singleton"
+
+Dir[File.dirname(__FILE__) + "/orbit/**/*.rb"].each { |file| require file }
 
 module Orbit
-  class Application < Singleton
+  class Application
+    include Singleton
+    attr_reader :builder
+
     def initialize
       instantiate
 
-      load_files
+      setup_builder
+      load_middleware
+
+      Loaders::DirectoryLoader.load
     end
 
-    def load_files
-      retries = 0
-      files = Dir["#{Dir.pwd}/#{config.app_path}/**/*.rb"]
+    def setup_builder
+      @builder = Rack::Builder.new
+    end
 
-      while retries < 3 && files.any?
-        files_with_exception = []
-        
-        files.each do |file|
-          begin
-            require file
-          rescue NameError
-            files_with_exception.push(file)
-          end
-        end
+    def load_middleware
+      builder.use Rack::MethodOverride
+      builder.use Rack::Head
+      builder.use config.logger_class
 
-        files = files_with_exception
-        retries += 1
-      end
+      use_session
+      use_protection
+    end
 
-      if files.any?
-        puts "[Warning] some files could not be loaded:"
-        files_with_exception.each { |file| puts " - #{file}" }
-        puts ""
-      end
+    def use_session
+      options = {}
+      options[:secret] = config.session_secret
+
+      builder.use Rack::Session::Cookie, options
+    end
+
+    def use_protection
+      options = {}
+      options[:except] = Array options[:except]
+      options[:except] += [:session_hijacking, :remote_token]
+      options[:reaction] ||= :drop_session
+      builder.use Rack::Protection, options
     end
 
     def self.config
@@ -54,8 +59,19 @@ module Orbit
       yield config
     end
 
+    def self.start
+      instance || new
+
+      instance.start
+    end
+
+    def start
+      builder.run self
+      builder
+    end
+
     def call(env)
-      @request = Rack::Request.new(env)
+      @request = config.request_class.new(env)
       verb = @request.request_method
       requested_path = @request.path_info
 
@@ -66,12 +82,7 @@ module Orbit
 
         @request.params.merge!(route_params)
 
-        result = route[:class].new(@request).send(route[:action])
-        if result.class == String
-          [200, {}, [result]]
-        else
-          result
-        end
+        route[:class].execute_action(@request, route[:action])
       else
         [404, {}, ["Oops! No route for #{verb} #{requested_path}"]]
       end

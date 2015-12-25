@@ -1,21 +1,27 @@
 module Orbit
-  class Singleton
-    def self.instance
-      @instance ||= new
-    end
-
-    def self.instance=(instance)
-      @instance = instance
-    end
-
-    def self.instantiated?
-      !!@instance
+  module Singleton
+    def self.included(base)
+        base.extend(ClassMethods)
     end
 
     def instantiate
       raise ArgumentError.new("Cannot instantiate a Singleton twice") if self.class.instantiated?
 
       self.class.instance = self
+    end
+
+    module ClassMethods
+      def instance
+        @instance ||= new
+      end
+
+      def instance=(instance)
+        @instance = instance
+      end
+
+      def instantiated?
+        !!@instance
+      end
     end
   end
 end

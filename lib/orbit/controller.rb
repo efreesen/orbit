@@ -1,9 +1,24 @@
 module Orbit
   class Controller
-    attr_reader :request
+    attr_reader :request, :response
 
     def initialize(request)
       @request = request
+      @response = Orbit::Config.response_class.new
+    end
+
+    def self.execute_action(request, action)
+      new(request).execute_action(action)
+    end
+
+    def execute_action(action)
+      result = send(action)
+
+      result = result.to_s if result.respond_to? :to_s
+
+      response.tap do |res|
+        res.body = Array(result)
+      end
     end
 
     def self.path(path)
@@ -13,10 +28,6 @@ module Orbit
 
     def self.base_path
       @base_path ||= '/'
-    end
-
-    def self.routes
-      @routes ||= {}
     end
 
     def self.get(action, &handler)
@@ -56,6 +67,22 @@ module Orbit
       @request.params
     end
 
+    def session
+      @request.session
+    end
+
+    def headers
+      request.headers
+    end
+
+    def status
+      response.status
+    end
+
+    def status=(code)
+      response.status = code
+    end
+
     private
     def self.create_method(verb, action, &handler)
       method = (action == '/') ? "root" : parameterize(action.to_s.gsub("*", "splat"))
@@ -73,16 +100,17 @@ module Orbit
       method_name
     end
 
-    def self.parameterize(string, sep = '_')
+    def self.parameterize(string)
+      sep = '_'
       # Turn unwanted chars into the separator
       parameterized_string = string.to_s.gsub(/[^a-z0-9\-_]+/i, sep)
-      unless sep.nil? || sep.empty?
-        re_sep = Regexp.escape(sep)
-        # No more than one of the separator in a row.
-        parameterized_string.gsub!(/#{re_sep}{2,}/, sep)
-        # Remove leading/trailing separator.
-        parameterized_string.gsub!(/^#{re_sep}|#{re_sep}$/i, '')
-      end
+      
+      re_sep = Regexp.escape(sep)
+      # No more than one of the separator in a row.
+      parameterized_string.gsub!(/#{re_sep}{2,}/, sep)
+      # Remove leading/trailing separator.
+      parameterized_string.gsub!(/^#{re_sep}|#{re_sep}$/i, '')
+
       parameterized_string.downcase
     end
   end

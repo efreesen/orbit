@@ -1,5 +1,6 @@
 module Orbit
-  class Router < Singleton
+  class Router
+    include Singleton
     attr_accessor :routes
 
     def initialize

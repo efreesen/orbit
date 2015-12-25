@@ -22,9 +22,9 @@ module Orbit
       def compile
         return compile_string if name.respond_to? :to_str
           
-        if name.respond_to?(:keys) && name.respond_to?(:match)
+        if is_hash?
           [name, name.keys]
-        elsif name.respond_to?(:names) && name.respond_to?(:match)
+        elsif is_object?
           [name, name.names]
         elsif name.respond_to? :match
           [name, []]
@@ -35,6 +35,14 @@ module Orbit
 
       private
       attr_accessor :ignore, :keys
+
+      def is_hash?
+        name.respond_to?(:keys) && name.respond_to?(:match)
+      end
+
+      def is_object?
+        name.respond_to?(:names) && name.respond_to?(:match)
+      end
 
       def compile_string
         # Special case handling.
@@ -61,54 +69,13 @@ module Orbit
           @ignore = []
 
           name.split('/', -1).map! do |segment|
-            # Key handling.
-            #
-            array = pattern(segment).gsub(/((:\w+)|\*)/).to_a
-            pattern(segment).gsub(/((:\w+)|\*)/) do |match|
-              if match == "*"
-                keys << 'splat'
-                "(.*?)"
-              else
-                keys << $2[1..-1]
-                safe_ignore
-              end
-            end
-          end
-        end
-      end
+            pattern_keys, pattern_ignore, result = Pattern.resolve(segment)
+            
+            @keys += pattern_keys
+            @ignore += pattern_ignore
 
-      # Special character handling.
-      #
-      def pattern(segment)
-        segment.to_str.gsub(/[^\?\%\\\/\:\*\w]|:(?!\w)/) do |c|
-          ignore.push(escaped(c).join) if c.match(/[\.@]/)
-          patt = encoded(c)
-          patt.gsub(/%[\da-fA-F]{2}/) do |match|
-            match.split(//).map! {|char| char =~ /[A-Z]/ ? "[#{char}#{char.tr('A-Z', 'a-z')}]" : char}.join
+            result
           end
-        end
-      end
-
-      def safe_ignore
-        unsafe_ignore = []
-        local_ignore = ignore.uniq.join.gsub(/%[\da-fA-F]{2}/) do |hex|
-          unsafe_ignore << hex[1..2]
-          ''
-        end
-        unsafe_patterns = unsafe_ignore.map! do |unsafe|
-          chars = unsafe.split(//).map! do |char|
-            if char =~ /[A-Z]/
-              char <<= char.tr('A-Z', 'a-z')
-            end
-            char
-          end
-
-          "|(?:%[^#{chars[0]}].|%[#{chars[0]}][^#{chars[1]}])"
-        end
-        if unsafe_patterns.length > 0
-          "((?:[^#{local_ignore}/?#%]#{unsafe_patterns.join()})+)"
-        else
-          "([^#{local_ignore}/?#]+)"
         end
       end
     end
