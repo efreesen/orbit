@@ -3,7 +3,7 @@ class Root < Orbit::Controller
     'Get Root'
   end
 
-  get '/*' do
+  get '/all/*' do
     'All'
   end
 

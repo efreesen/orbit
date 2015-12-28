@@ -82,9 +82,13 @@ module Orbit
 
         @request.params.merge!(route_params)
 
-        route[:class].execute_action(@request, route[:action])
+        begin
+          route[:class].execute_action(@request, route[:action])
+        rescue Exception => exception
+          Config.response_class.server_error(exception, verb, requested_path)
+        end
       else
-        [404, {}, ["Oops! No route for #{verb} #{requested_path}"]]
+        Config.response_class.not_found(verb, requested_path)
       end
     end
   end

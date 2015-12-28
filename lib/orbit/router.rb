@@ -34,7 +34,7 @@ module Orbit
           options[:route].path.regex.match(path)
         end
 
-        route = route.last
+        route = route.last if route
       end
 
       route
