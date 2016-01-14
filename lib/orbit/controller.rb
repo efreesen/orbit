@@ -26,6 +26,10 @@ module Orbit
       @base_path += path
     end
 
+    def self.routes
+      @routes ||= []
+    end
+
     def self.base_path
       @base_path ||= '/'
     end
@@ -55,6 +59,17 @@ module Orbit
     end
 
     def self.add_route(verb, action, &handler)
+      route = "#{verb.downcase}_#{action}"
+
+      if routes.include?(route)
+        update_method(verb, action, &handler)
+      else
+        routes.push(route)
+        create_route(verb, action, &handler)
+      end
+    end
+
+    def self.create_route(verb, action, &handler)
       method_name = create_method(verb, action, &handler)
 
       full_path = "#{@base_path}/#{action}"
@@ -98,6 +113,15 @@ module Orbit
       define_method method_name, &handler
 
       method_name
+    end
+
+    def self.update_method(verb, action, &handler)
+      method = (action == '/') ? "root" : parameterize(action.to_s.gsub("*", "splat"))
+      method = "#{verb.downcase}_#{method}".to_sym
+
+      define_method method, &handler
+
+      method
     end
 
     def self.parameterize(string)

@@ -16,7 +16,8 @@ module Orbit
       setup_builder
       load_middleware
 
-      Loaders::DirectoryLoader.load
+      loader = Loaders::DirectoryLoader.load
+      @reloader = loader.reloader
     end
 
     def setup_builder
@@ -71,6 +72,7 @@ module Orbit
     end
 
     def call(env)
+      @reloader.reload
       @request = config.request_class.new(env)
       verb = @request.request_method
       requested_path = @request.path_info

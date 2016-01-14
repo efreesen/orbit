@@ -1,15 +1,20 @@
 module Orbit
   module Loaders
     class DirectoryLoader
+      attr_reader :reloader
+
       def initialize
         base_path = "#{Dir.pwd}/#{Orbit::Config.app_path}"
         
         @retries = 0
         @files = Dir["#{base_path}/**/*.rb"]
+        @reloader = FileReloader.new(files)
       end
 
       def self.load
-        new.load
+        new.tap do |instance|
+          instance.load
+        end
       end
 
       def load
