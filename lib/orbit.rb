@@ -80,6 +80,10 @@ module Orbit
       route = Config.router_class.match(verb, requested_path)
 
       if route
+        intercepted = Interceptors::List.intercept_path(requested_path)
+
+        return intercepted if intercepted
+
         route_params = route[:route].path.get_params(requested_path) || {}
 
         @request.params.merge!(route_params)

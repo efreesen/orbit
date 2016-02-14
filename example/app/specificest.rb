@@ -4,4 +4,8 @@ class Specificest < Specific
   get :oh_my do
     'oh my!!!'
   end
+
+  get :allowed do
+    'allowed'
+  end
 end

@@ -3,25 +3,22 @@ module Orbit
     class Base < Rack::Response
       def initialize
         super
-        redirect_status 302
+        @status = 302
       end
 
       def self.execute
-        new.intercept
+        new.execute
       end
 
       def execute
         @intercept = redirect(intercept, status)
+        
 
         @intercept ? self : nil
       end
 
       def intercept
         raise NotImplementedError.new("#intercept method must be implemented on #{self.class.name}")
-      end
-
-      def redirect_status(code)
-        @status = code
       end
     end
   end
