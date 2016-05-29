@@ -1,10 +1,13 @@
 require 'rack'
 require 'rack/protection'
+require 'logger'
 
 module Orbit
   class Config
     include Singleton
-    attr_accessor :app_path, :logger_class, :path_class, :request_class, :response_class, :route_class, :router_class, :session_secret
+    attr_accessor :app_path, :rack_logger_class, :logger_class, :log_level,
+                  :log_appname, :log_file, :path_class, :request_class,
+                  :response_class, :route_class, :router_class, :session_secret
 
     def initialize
       instantiate
@@ -17,7 +20,11 @@ module Orbit
       @session_secret = 'session_secret'
 
       # Classes
-      @logger_class = Rack::Logger
+      @rack_logger_class = Rack::Logger
+      @logger_class = Logger
+      @log_level = Logger::DEBUG
+      @log_file = STDOUT
+      @log_appname = 'Orbit App'
       @path_class   = Orbit::Routing::Path
       @request_class = Orbit::Request
       @response_class = Orbit::Response
@@ -31,6 +38,15 @@ module Orbit
 
     def self.logger_class
       @instance.logger_class
+    end
+
+    def self.logger
+      @_logger ||= begin
+        logger_class.new(@instance.log_file).tap do |logger|
+          logger.level = @instance.log_level
+          logger.progname = @instance.log_appname
+        end
+      end
     end
 
     def self.path_class

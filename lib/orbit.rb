@@ -27,7 +27,7 @@ module Orbit
     def load_middleware
       builder.use Rack::MethodOverride
       builder.use Rack::Head
-      builder.use config.logger_class
+      builder.use config.rack_logger_class
 
       use_session
       use_protection
