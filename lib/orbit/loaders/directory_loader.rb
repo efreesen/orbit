@@ -5,7 +5,7 @@ module Orbit
 
       def initialize
         base_path = "#{Dir.pwd}/#{Orbit::Config.app_path}"
-        
+
         @retries = 0
         @files = Dir["#{base_path}/**/*.rb"]
         @reloader = FileReloader.new(files)

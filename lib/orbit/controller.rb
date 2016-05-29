@@ -21,6 +21,18 @@ module Orbit
       end
     end
 
+    def render(template)
+      root_path = Dir.pwd
+
+      template_location = "#{root_path}/#{template}"
+
+      ERB.new(File.read(template_location)).result(locals.variables)
+    end
+
+    def locals
+      @_locals ||= TemplateBinding.locals(params)
+    end
+
     def self.path(path)
       @base_path ||= superclass != Orbit::Controller ? superclass.base_path : ''
       @base_path += path
@@ -128,7 +140,7 @@ module Orbit
       sep = '_'
       # Turn unwanted chars into the separator
       parameterized_string = string.to_s.gsub(/[^a-z0-9\-_]+/i, sep)
-      
+
       re_sep = Regexp.escape(sep)
       # No more than one of the separator in a row.
       parameterized_string.gsub!(/#{re_sep}{2,}/, sep)
