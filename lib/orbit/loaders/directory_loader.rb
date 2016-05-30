@@ -4,10 +4,19 @@ module Orbit
       attr_reader :reloader
 
       def initialize
-        base_path = "#{Dir.pwd}/#{Orbit::Config.app_path}"
+        base_path = "#{Dir.pwd}"
+        @files = []
+
+        if Orbit::Config.app_path.is_a?(String)
+          @files.push Dir["#{base_path}/#{Orbit::Config.app_path}/**/*.rb"]
+        else
+          Orbit::Config.app_path.each do |path|
+            @files.push Dir["#{base_path}/#{path}/**/*.rb"]
+          end
+        end
 
         @retries = 0
-        @files = Dir["#{base_path}/**/*.rb"]
+        @files = @files.flatten
         @reloader = FileReloader.new(files)
       end
 
