@@ -17,7 +17,11 @@ module Orbit
     end
 
     def variables
-      @variables
+      binding.tap do |bind|
+        @variables.local_variables.each do |var|
+          binding.local_variable_set(var, @variables.local_variable_get(var))
+        end
+      end
     end
 
     def method_missing(method, *args, &block)

@@ -7,6 +7,14 @@ module Orbit
       @response = Orbit::Config.response_class.new
     end
 
+    def self.layout(_layout = nil)
+      if _layout
+        @layout = "#{Dir.pwd}/#{_layout}"
+      else
+        @layout
+      end
+    end
+
     def self.execute_action(request, action)
       new(request).execute_action(action)
     end
@@ -26,7 +34,11 @@ module Orbit
 
       template_location = "#{root_path}/#{template}"
 
-      ERB.new(File.read(template_location)).result(locals.variables)
+      templates = [template_location, self.class.layout].compact
+
+      templates.inject(nil) do | prev, template |
+        _render(template) { prev }
+      end
     end
 
     def locals
@@ -149,5 +161,15 @@ module Orbit
 
       parameterized_string.downcase
     end
+
+    def _render(template)
+      file = File.read(template)
+
+      ERB.new(file).result(locals.variables { yield })
+    end
+
+    private_class_method :create_method
+    private_class_method :update_method
+    private_class_method :parameterize
   end
 end
