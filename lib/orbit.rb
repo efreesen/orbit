@@ -27,6 +27,7 @@ module Orbit
     def load_middleware
       builder.use Rack::MethodOverride
       builder.use Rack::Head
+      builder.use Rack::Static, :urls => Config.static_files_path
       builder.use config.rack_logger_class
 
       use_session

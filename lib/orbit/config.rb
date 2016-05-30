@@ -5,9 +5,11 @@ require 'logger'
 module Orbit
   class Config
     include Singleton
-    attr_accessor :app_path, :rack_logger_class, :logger_class, :log_level,
-                  :log_appname, :log_file, :path_class, :request_class,
-                  :response_class, :route_class, :router_class, :session_secret
+
+    attr_accessor :app_path, :static_files_path, :rack_logger_class,
+                  :logger_class, :log_level, :log_appname, :log_file,
+                  :path_class, :request_class, :response_class, :route_class,
+                  :router_class, :session_secret
 
     def initialize
       instantiate
@@ -16,15 +18,18 @@ module Orbit
     end
 
     def set_default_config
-      @app_path     = 'app'
-      @session_secret = 'session_secret'
+      @app_path          = 'app'
+      @static_files_path = ["/media"]
+      @session_secret    = 'session_secret'
 
-      # Classes
-      @rack_logger_class = Rack::Logger
+      # Logging options
       @logger_class = Logger
       @log_level = Logger::DEBUG
       @log_file = STDOUT
       @log_appname = 'Orbit App'
+
+      # Classes
+      @rack_logger_class = Rack::Logger
       @path_class   = Orbit::Routing::Path
       @request_class = Orbit::Request
       @response_class = Orbit::Response
@@ -34,6 +39,10 @@ module Orbit
 
     def self.app_path
       @instance.app_path
+    end
+
+    def self.static_files_path
+      @instance.static_files_path
     end
 
     def self.logger_class
