@@ -101,13 +101,21 @@ module Orbit
       Orbit::Router.add(verb, full_path, self, method_name)
     end
 
+    def session
+      @request.session
+    end
+
+    def cookies
+      request.cookies
+    end
+
+    def cookie_domain
+      request.host
+    end
+
     protected
     def params
       @request.params
-    end
-
-    def session
-      @request.session
     end
 
     def headers
