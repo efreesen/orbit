@@ -42,7 +42,7 @@ module Orbit
     end
 
     def locals
-      @_locals ||= TemplateBinding.locals(params)
+      @_locals ||= TemplateBinding.new(params)
     end
 
     def self.path(path)
@@ -106,14 +106,13 @@ module Orbit
     end
 
     def cookies
-      request.cookies
+      @_cookies ||= Session::Cookie.new(self, request.cookies)
     end
 
     def cookie_domain
       request.host
     end
 
-    protected
     def params
       @request.params
     end
@@ -128,6 +127,14 @@ module Orbit
 
     def status=(code)
       response.status = code
+    end
+
+    def responds_to_last_request_update_allowed?
+      true
+    end
+
+    def last_request_update_allowed?
+      true
     end
 
     private
