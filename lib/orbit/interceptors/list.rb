@@ -14,6 +14,10 @@ module Orbit
         instance.interceptors.push(interceptor)
       end
 
+      def self.interceptors
+        instance.interceptors
+      end
+
       def interceptors_for_path(path)
         return [] unless path
 
@@ -22,9 +26,11 @@ module Orbit
         end
       end
 
-      def self.intercept_path(path)
+      def self.intercept_path(request)
+        path = request.path_info
+
         instance.interceptors_for_path(path).each do |hash|
-          result = hash.interceptor_class.execute
+          result = hash.interceptor_class.execute(request)
 
           return result if result
         end

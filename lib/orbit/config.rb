@@ -9,7 +9,7 @@ module Orbit
     attr_accessor :app_path, :static_files_path, :rack_logger_class,
                   :logger_class, :log_level, :log_appname, :log_file,
                   :path_class, :request_class, :response_class, :route_class,
-                  :router_class, :session_secret
+                  :router_class, :session_secret, :session_options
 
     def initialize
       instantiate
@@ -35,10 +35,15 @@ module Orbit
       @response_class = Orbit::Response
       @route_class  = Orbit::Routing::Route
       @router_class = Orbit::Router
+      @session_options = {}
     end
 
     def self.app_path
       @instance.app_path
+    end
+
+    def self.session_options
+      @instance.session_options
     end
 
     def self.static_files_path

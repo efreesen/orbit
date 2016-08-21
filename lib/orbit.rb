@@ -30,12 +30,11 @@ module Orbit
       builder.use Rack::Static, :urls => Config.static_files_path
       builder.use config.rack_logger_class
 
-      use_session
+      use_session(config.session_options)
       use_protection
     end
 
-    def use_session
-      options = {}
+    def use_session(options)
       options[:secret] = config.session_secret
 
       builder.use Rack::Session::Cookie, options
@@ -81,7 +80,7 @@ module Orbit
       route = Config.router_class.match(verb, requested_path)
 
       if route
-        intercepted = Interceptors::List.intercept_path(requested_path)
+        intercepted = Interceptors::List.intercept_path(@request)
 
         return intercepted if intercepted
 
